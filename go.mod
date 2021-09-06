@@ -4,7 +4,9 @@ go 1.13
 
 require (
 	bitbucket.org/creachadair/shell v0.0.6
+	cloud.google.com/go/monitoring v0.1.0 // indirect
 	cloud.google.com/go/spanner v1.20.0
+	cloud.google.com/go/trace v0.1.0 // indirect
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.7
 	github.com/apache/beam v2.29.0+incompatible
 	github.com/fullstorydev/grpcurl v1.8.1
@@ -29,11 +31,11 @@ require (
 	go.opencensus.io v0.23.0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210603125802-9665404d3644
-	golang.org/x/tools v0.1.3
-	google.golang.org/api v0.48.0
-	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08
-	google.golang.org/grpc v1.38.0
+	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
+	golang.org/x/tools v0.1.5
+	google.golang.org/api v0.56.0
+	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
+	google.golang.org/grpc v1.40.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/protobuf v1.27.1
 )
