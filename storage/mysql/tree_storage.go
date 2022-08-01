@@ -141,8 +141,11 @@ func (m *mySQLTreeStorage) setSubtreeStmt(ctx context.Context, num int) (*sql.St
 	return m.getStmt(ctx, insertSubtreeMultiSQL, num, "VALUES(?, ?, ?, ?)", "(?, ?, ?, ?)")
 }
 
-func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree, hashSizeBytes int, subtreeCache *cache.SubtreeCache) (treeTX, error) {
-	t, err := m.db.BeginTx(ctx, nil /* opts */)
+func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree, hashSizeBytes int, subtreeCache *cache.SubtreeCache, readOnly bool) (treeTX, error) {
+	opts := &sql.TxOptions{
+		ReadOnly: readOnly,
+	}
+	t, err := m.db.BeginTx(ctx, opts)
 	if err != nil {
 		glog.Warningf("Could not start tree TX: %s", err)
 		return treeTX{}, err

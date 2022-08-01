@@ -71,11 +71,14 @@ type mysqlAdminStorage struct {
 }
 
 func (s *mysqlAdminStorage) Snapshot(ctx context.Context) (storage.ReadOnlyAdminTX, error) {
-	return s.beginInternal(ctx)
+	return s.beginInternal(ctx, true)
 }
 
-func (s *mysqlAdminStorage) beginInternal(ctx context.Context) (storage.AdminTX, error) {
-	tx, err := s.db.BeginTx(ctx, nil /* opts */)
+func (s *mysqlAdminStorage) beginInternal(ctx context.Context, readOnly bool) (storage.AdminTX, error) {
+	opts := &sql.TxOptions{
+		ReadOnly: readOnly,
+	}
+	tx, err := s.db.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +86,7 @@ func (s *mysqlAdminStorage) beginInternal(ctx context.Context) (storage.AdminTX,
 }
 
 func (s *mysqlAdminStorage) ReadWriteTransaction(ctx context.Context, f storage.AdminTXFunc) error {
-	tx, err := s.beginInternal(ctx)
+	tx, err := s.beginInternal(ctx, false)
 	if err != nil {
 		return err
 	}
