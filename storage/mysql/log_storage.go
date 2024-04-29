@@ -182,13 +182,13 @@ func (m *mySQLLogStorage) GetActiveLogIDs(ctx context.Context) ([]int64, error) 
 	return ids, rows.Err()
 }
 
-func (m *mySQLLogStorage) beginInternal(ctx context.Context, tree *trillian.Tree) (*logTreeTX, error) {
+func (m *mySQLLogStorage) beginInternal(ctx context.Context, tree *trillian.Tree, rw bool) (*logTreeTX, error) {
 	once.Do(func() {
 		createMetrics(m.metricFactory)
 	})
 
 	stCache := cache.NewLogSubtreeCache(rfc6962.DefaultHasher)
-	ttx, err := m.beginTreeTx(ctx, tree, rfc6962.DefaultHasher.Size(), stCache)
+	ttx, err := m.beginTreeTx(ctx, tree, rfc6962.DefaultHasher.Size(), stCache, rw)
 	if err != nil && err != storage.ErrTreeNeedsInit {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (m *mySQLLogStorage) beginInternal(ctx context.Context, tree *trillian.Tree
 // if the transaction is rolled back as a result of a canceled context. It must
 // return "generic" errors, and only log the specific ones for debugging.
 func (m *mySQLLogStorage) ReadWriteTransaction(ctx context.Context, tree *trillian.Tree, f storage.LogTXFunc) error {
-	tx, err := m.beginInternal(ctx, tree)
+	tx, err := m.beginInternal(ctx, tree, true)
 	if err != nil && err != storage.ErrTreeNeedsInit {
 		return err
 	}
@@ -241,7 +241,7 @@ func (m *mySQLLogStorage) ReadWriteTransaction(ctx context.Context, tree *trilli
 }
 
 func (m *mySQLLogStorage) AddSequencedLeaves(ctx context.Context, tree *trillian.Tree, leaves []*trillian.LogLeaf, timestamp time.Time) ([]*trillian.QueuedLogLeaf, error) {
-	tx, err := m.beginInternal(ctx, tree)
+	tx, err := m.beginInternal(ctx, tree, true)
 	if tx != nil {
 		// Ensure we don't leak the transaction. For example if we get an
 		// ErrTreeNeedsInit from beginInternal() or if AddSequencedLeaves fails
@@ -266,7 +266,7 @@ func (m *mySQLLogStorage) AddSequencedLeaves(ctx context.Context, tree *trillian
 }
 
 func (m *mySQLLogStorage) SnapshotForTree(ctx context.Context, tree *trillian.Tree) (storage.ReadOnlyLogTreeTX, error) {
-	tx, err := m.beginInternal(ctx, tree)
+	tx, err := m.beginInternal(ctx, tree, false)
 	if err != nil && err != storage.ErrTreeNeedsInit {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ func (m *mySQLLogStorage) SnapshotForTree(ctx context.Context, tree *trillian.Tr
 }
 
 func (m *mySQLLogStorage) QueueLeaves(ctx context.Context, tree *trillian.Tree, leaves []*trillian.LogLeaf, queueTimestamp time.Time) ([]*trillian.QueuedLogLeaf, error) {
-	tx, err := m.beginInternal(ctx, tree)
+	tx, err := m.beginInternal(ctx, tree, true)
 	if tx != nil {
 		// Ensure we don't leak the transaction. For example if we get an
 		// ErrTreeNeedsInit from beginInternal() or if QueueLeaves fails

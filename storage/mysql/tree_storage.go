@@ -153,8 +153,14 @@ func (m *mySQLTreeStorage) setSubtreeStmt(ctx context.Context, num int) (*sql.St
 	return m.getStmt(ctx, insertSubtreeMultiSQL, num, "VALUES(?, ?, ?, ?)", "(?, ?, ?, ?)")
 }
 
-func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree, hashSizeBytes int, subtreeCache *cache.SubtreeCache) (treeTX, error) {
-	t, err := m.db.BeginTx(ctx, nil /* opts */)
+func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree, hashSizeBytes int, subtreeCache *cache.SubtreeCache, rw bool) (treeTX, error) {
+	var opts *sql.TxOptions
+	if !rw {
+		opts = &sql.TxOptions{
+			ReadOnly: true,
+		}
+	}
+	t, err := m.db.BeginTx(ctx, opts)
 	if err != nil {
 		klog.Warningf("Could not start tree TX: %s", err)
 		return treeTX{}, err
