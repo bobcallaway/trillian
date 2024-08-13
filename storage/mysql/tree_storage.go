@@ -169,7 +169,7 @@ func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree,
 	if err := anypb.UnmarshalTo(tree.StorageSettings, o, proto.UnmarshalOptions{}); err != nil {
 		return treeTX{}, fmt.Errorf("failed to unmarshal StorageSettings: %v", err)
 	}
-	subtreeRevisions = o.SubtreeRevisions
+	subtreeRevisions = true //o.SubtreeRevisions
 	return treeTX{
 		tx:            t,
 		mu:            &sync.Mutex{},
