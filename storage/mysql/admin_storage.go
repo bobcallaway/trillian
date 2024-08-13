@@ -252,7 +252,7 @@ func (t *adminTX) CreateTree(ctx context.Context, tree *trillian.Tree) (*trillia
 		return nil, fmt.Errorf("failed to unmarshal StorageOptions: %v", err)
 	}
 	ss := storageSettings{
-		Revisioned: o.SubtreeRevisions,
+		Revisioned: true, // o.SubtreeRevisions,
 	}
 	buff := &bytes.Buffer{}
 	enc := gob.NewEncoder(buff)
