@@ -20,6 +20,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"os"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -34,13 +35,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// These statements are fixed
-const (
-	insertSubtreeMultiSQL = `INSERT INTO Subtree(TreeId, SubtreeId, Nodes, SubtreeRevision) ` + placeholderSQL + ` ON DUPLICATE KEY UPDATE Nodes=VALUES(Nodes)`
-	insertTreeHeadSQL     = `INSERT INTO TreeHead(TreeId,TreeHeadTimestamp,TreeSize,RootHash,TreeRevision,RootSignature)
-		 VALUES(?,?,?,?,?,?)`
-
-	selectSubtreeSQL = `
+var selectSubtreeSQL = `
  SELECT x.SubtreeId, Subtree.Nodes
  FROM (
  	SELECT n.TreeId, n.SubtreeId, max(n.SubtreeRevision) AS MaxRevision
@@ -53,7 +48,13 @@ const (
  ON Subtree.SubtreeId = x.SubtreeId 
  AND Subtree.SubtreeRevision = x.MaxRevision 
  AND Subtree.TreeId = x.TreeId
- AND Subtree.TreeId = ?`
+ AND Subtree.TreeId = ? ` + os.Getenv("SQL_SELECT_SUFFIX")
+
+// These statements are fixed
+const (
+	insertSubtreeMultiSQL = `INSERT INTO Subtree(TreeId, SubtreeId, Nodes, SubtreeRevision) ` + placeholderSQL + ` ON DUPLICATE KEY UPDATE Nodes=VALUES(Nodes)`
+	insertTreeHeadSQL     = `INSERT INTO TreeHead(TreeId,TreeHeadTimestamp,TreeSize,RootHash,TreeRevision,RootSignature)
+		 VALUES(?,?,?,?,?,?)`
 
 	selectSubtreeSQLNoRev = `
  SELECT SubtreeId, Subtree.Nodes
