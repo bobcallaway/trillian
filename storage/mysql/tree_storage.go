@@ -91,6 +91,7 @@ func OpenDB(dbURL string) (*sql.DB, error) {
 		return nil, err
 	}
 
+	klog.Infof(selectSubtreeSQL)
 	return db, nil
 }
 
