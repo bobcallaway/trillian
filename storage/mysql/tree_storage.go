@@ -110,7 +110,7 @@ func expandPlaceholderSQL(sql string, num int, first, rest string) string {
 
 	parameters := first + strings.Repeat(","+rest, num-1)
 	if strings.Contains(sql, "FOR UPDATE") {
-		klog.Warningf("select has FOR UPDATE")
+		klog.Infof("select has FOR UPDATE")
 	}
 
 	return strings.Replace(sql, placeholderSQL, parameters, 1)
