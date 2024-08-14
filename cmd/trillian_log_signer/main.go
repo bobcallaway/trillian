@@ -106,6 +106,7 @@ func main() {
 
 	klog.CopyStandardLogTo("WARNING")
 	klog.Info("**** Log Signer Starting ****")
+	klog.Info("---- SQL_SELECT_SUFFIX = " + os.Getenv("SQL_SELECT_SUFFIX"))
 
 	mf := prometheus.MetricFactory{}
 	monitoring.SetStartSpan(opencensus.StartSpan)

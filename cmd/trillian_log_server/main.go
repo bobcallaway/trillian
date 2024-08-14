@@ -95,6 +95,7 @@ func main() {
 		}
 	}
 	klog.Info("**** Log Server Starting ****")
+	klog.Info("---- SQL_SELECT_SUFFIX = " + os.Getenv("SQL_SELECT_SUFFIX"))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
