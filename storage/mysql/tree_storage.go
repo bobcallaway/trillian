@@ -155,13 +155,7 @@ func (m *mySQLTreeStorage) setSubtreeStmt(ctx context.Context, num int) (*sql.St
 }
 
 func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree, hashSizeBytes int, subtreeCache *cache.SubtreeCache) (treeTX, error) {
-	var opts *sql.TxOptions
-	if os.Getenv("SQL_TXN_ISOLATION") == "SERIALIZABLE" {
-		opts = &sql.TxOptions{Isolation: sql.LevelSerializable}
-	} else {
-		opts = nil
-	}
-	t, err := m.db.BeginTx(ctx, opts)
+	t, err := m.db.BeginTx(ctx, nil)
 	if err != nil {
 		klog.Warningf("Could not start tree TX: %s", err)
 		return treeTX{}, err
@@ -204,6 +198,18 @@ func (t *treeTX) getSubtrees(ctx context.Context, treeRevision int64, ids [][]by
 	klog.V(4).Infof("getSubtrees(")
 	if len(ids) == 0 {
 		return nil, nil
+	}
+
+	// recreate transaction so the read from Subtrees is serializable
+	if os.Getenv("SQL_TXN_ISOLATION") == "SERIALIZABLE" {
+		var err error
+		if err = t.tx.Rollback(); err != nil {
+			klog.Error(err)
+		}
+		t.tx, err = t.ts.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	tmpl, err := t.ts.getSubtreeStmt(ctx, t.subtreeRevs, len(ids))

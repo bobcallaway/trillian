@@ -20,7 +20,6 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -81,13 +80,7 @@ func (s *mysqlAdminStorage) Snapshot(ctx context.Context) (storage.ReadOnlyAdmin
 }
 
 func (s *mysqlAdminStorage) beginInternal(ctx context.Context) (storage.AdminTX, error) {
-	var opts *sql.TxOptions
-	if os.Getenv("SQL_TXN_ISOLATION") == "SERIALIZABLE" {
-		opts = &sql.TxOptions{Isolation: sql.LevelSerializable}
-	} else {
-		opts = nil
-	}
-	tx, err := s.db.BeginTx(ctx, opts)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
