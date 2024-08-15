@@ -155,7 +155,13 @@ func (m *mySQLTreeStorage) setSubtreeStmt(ctx context.Context, num int) (*sql.St
 }
 
 func (m *mySQLTreeStorage) beginTreeTx(ctx context.Context, tree *trillian.Tree, hashSizeBytes int, subtreeCache *cache.SubtreeCache) (treeTX, error) {
-	t, err := m.db.BeginTx(ctx, nil /* opts */)
+	var opts *sql.TxOptions
+	if os.Getenv("SQL_TXN_ISOLATION") == "SERIALIZABLE" {
+		opts = &sql.TxOptions{Isolation: sql.LevelSerializable}
+	} else {
+		opts = nil
+	}
+	t, err := m.db.BeginTx(ctx, opts)
 	if err != nil {
 		klog.Warningf("Could not start tree TX: %s", err)
 		return treeTX{}, err
